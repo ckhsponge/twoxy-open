@@ -1,3 +1,6 @@
+
+require 'net/http'
+require 'uri'
 class FetchController < ApplicationController
   EXPIRE_FETCH = 1.minutes
   EXPIRE_CONTENT = 15.minutes
@@ -14,7 +17,9 @@ class FetchController < ApplicationController
     end
     result = data_cache.fetch(source, :expires_in => EXPIRE_FETCH ) do
       begin
-        open(source).read
+        body = Net::HTTP.get(URI.parse(source))
+        puts body
+        body
       rescue Exception => exc
         logger.error exc.to_s
         "not found, please wait #{EXPIRE_FETCH} seconds and try again"
