@@ -1,0 +1,9 @@
+.loadpath
+config/database.yml
+config/private.yml
+Capfile
+log
+public/cache
+config/deploy.rb
+.project
+

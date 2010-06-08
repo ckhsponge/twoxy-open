@@ -1,0 +1,13 @@
+%h2
+  Enter some urls:
+- form_tag do
+  = text_area_tag :sources, (@sources || []).join("\n"), :cols => 100, :rows => 5
+  %br/
+  = submit_tag "submit"
+- if @sources
+  %h2
+    Results
+  - @sources.each do |source|
+    - url = url_for :action => "url", :source => source, :only_path => false
+    = link_to url, url
+    %br/
