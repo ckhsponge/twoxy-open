@@ -8,6 +8,6 @@
   %h2
     Results
   - @sources.each do |source|
-    - url = url_for :action => "url", :source => source, :only_path => false
+    - url = url_for :host => ENV["HOST_CDN"], :action => "url", :source => source, :only_path => false
     = link_to url, url
     %br/
