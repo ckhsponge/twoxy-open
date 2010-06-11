@@ -26,6 +26,7 @@ class FetchController < ApplicationController
       end
     end
     headers["Cache-Control"]="max-age=#{EXPIRE_CONTENT}"
+    headers["Vary"]="Accept-Encoding"
     render :text => result
   end
   
