@@ -9,7 +9,7 @@ class FetchController < ApplicationController
   EXPIRE_CONTENT = 15.minutes
   
   def index
-    @sources = params[:sources].split("\n").collect{|s| s.strip} if params[:sources]
+    @sources = params[:sources].split("\n").collect{|s| s.strip.gsub(" ","+")} if params[:sources]
   end
   
   #uses Net::HTTP
@@ -25,6 +25,7 @@ class FetchController < ApplicationController
   def httparty
     serve_cached_data_for_source("HTTPPARTY") do |source|
       response = HTTParty.get(source)
+      #puts "reponse #{reponse.class} #{response.methods.sort}"
       #puts response.body
       response.body
     end
