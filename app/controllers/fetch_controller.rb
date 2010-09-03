@@ -14,11 +14,7 @@ class FetchController < ApplicationController
   
   #uses Net::HTTP
   def url
-    serve_cached_data_for_source do |source|
-        response = fetch_url(source)
-        #puts response.body
-        response.body
-    end
+    httparty
   end
   
   #uses httparty lib
@@ -50,34 +46,6 @@ class FetchController < ApplicationController
     headers["Cache-Control"]="max-age=#{EXPIRE_CONTENT}"
     headers["Vary"]="Accept-Encoding"
     render :text => result
-  end
-  
-  def fetch_url(uri_str, limit = 10)
-    puts "fetch_url #{uri_str}"
-    # You should choose better exception.
-    raise ArgumentError, 'HTTP redirect too deep' if limit == 0
-
-    url = URI.parse(uri_str)
-    request = Net::HTTP::Get.new(url.path)
-    #fake the user agent
-#    request['User-Agent'] = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3"
-#    request['Accept'] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-#    request['Accept-Charset'] = "ISO-8859-1,utf-8;q=0.7,*;q=0.7"
-#    request['Host'] = "www.google.com"
-#    request['Accept-Language'] = "en-us,en;q=0.5"
-#    request['Accept-Encoding'] = "gzip,deflate"
-#    request['Keep-Alive'] = "115"
-#    request['Connection'] = "keep-alive"
-#    puts request.to_hash.inspect
-    response = Net::HTTP.start(url.host, url.port) {|http|
-      http.request(request)
-    }
-    case response
-    when Net::HTTPSuccess     then response
-    when Net::HTTPRedirection then fetch_url(response['location'], limit - 1)
-    else
-      raise "http error #{response.code}-#{response.message}"
-    end
   end
     
   def data_cache
