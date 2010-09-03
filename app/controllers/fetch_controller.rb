@@ -8,6 +8,8 @@ class FetchController < ApplicationController
   EXPIRE_FETCH = 1.minutes
   EXPIRE_CONTENT = 15.minutes
   
+  ERROR_PREFIX = "ERROR"
+  
   def index
     @sources = params[:sources].split("\n").collect{|s| s.strip.gsub(" ","+")} if params[:sources]
   end
@@ -40,12 +42,13 @@ class FetchController < ApplicationController
         yield(source)
       rescue Exception => exc
         logger.error exc.to_s
-        "not found, please wait #{EXPIRE_FETCH} seconds and try again (#{exc.to_s})"
+        "#{ERROR_PREFIX}: data not found, please wait #{EXPIRE_FETCH} seconds and try again (#{exc.to_s})"
       end
     end
     headers["Cache-Control"]="max-age=#{EXPIRE_CONTENT}"
     headers["Vary"]="Accept-Encoding"
-    render :text => result
+    status = result.starts_with?(ERROR_PREFIX) ? :not_found : :ok #using the beginning text to determine status code is hacky
+    render :text => result, :status => status
   end
     
   def data_cache
