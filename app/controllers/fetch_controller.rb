@@ -3,10 +3,13 @@ require 'net/http'
 require 'uri'
 #require 'http_encoding_helper' #for gzip support use response.plain_body
 require 'httparty'
+require 'system_timer'
+
 
 class FetchController < ApplicationController
   EXPIRE_FETCH = 1.minutes
   EXPIRE_CONTENT = 15.minutes
+  TIMEOUT_INTERVAL = 15.seconds
   
   ERROR_PREFIX = "ERROR"
   
@@ -22,7 +25,7 @@ class FetchController < ApplicationController
   #uses httparty lib
   def httparty
     serve_cached_data_for_source("HTTPPARTY") do |source|
-      response = HTTParty.get(source)
+      response = HTTParty.get(source, :timeout => TIMEOUT_INTERVAL)
       #puts "reponse #{reponse.class} #{response.methods.sort}"
       #puts response.body
       response.body
@@ -39,7 +42,9 @@ class FetchController < ApplicationController
     end
     result = data_cache.fetch("#{cache_prepend}#{source}", :expires_in => EXPIRE_FETCH ) do
       begin
-        yield(source)
+        SystemTimer.timeout_after(TIMEOUT_INTERVAL + 1) do
+          yield(source)
+        end
       rescue Exception => exc
         logger.error exc.to_s
         "#{ERROR_PREFIX}: data not found, please wait #{EXPIRE_FETCH} seconds and try again (#{exc.to_s})"
