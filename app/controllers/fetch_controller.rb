@@ -7,8 +7,8 @@ require 'httparty'
 
 
 class FetchController < ApplicationController
-  EXPIRE_FETCH = 1.minutes
-  EXPIRE_CONTENT = 15.minutes
+  EXPIRE_FETCH = 5.minutes #local file cache expiry
+  EXPIRE_CONTENT = 15.minutes #remote cdn and browser client expiry
   TIMEOUT_INTERVAL = 15.seconds
   
   ERROR_PREFIX = "ERROR"
