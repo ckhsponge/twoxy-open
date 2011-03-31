@@ -19,37 +19,30 @@ class FetchController < ApplicationController
   
   #uses Net::HTTP
   def url
-    httparty
-  end
-  
-  #uses httparty lib
-  def httparty
-    serve_cached_data_for_source("HTTPPARTY") do |source|
-      response = HTTParty.get(source, :timeout => TIMEOUT_INTERVAL)
-      #puts "reponse #{reponse.class} #{response.methods.sort}"
-      #puts response.body
-      response.body
-    end
-  end
-  
-  protected
-  #cache_prepend distinguishes caches
-  def serve_cached_data_for_source( cache_prepend = "" )
-    source = params[:source]
-    unless source
-      render :text => "no url specified"
-      return
-    end
-    result = data_cache.fetch("#{cache_prepend}#{source}", :expires_in => EXPIRE_FETCH ) do
+    serve_cached_data_for_source do |source|
       begin
         #SystemTimer.timeout_after(TIMEOUT_INTERVAL + 1) do
-          yield(source)
+        response = HTTParty.get(source, :timeout => TIMEOUT_INTERVAL)
+        #puts "reponse #{reponse.class} #{response.methods.sort}"
+        #puts response.body
+        response.body
         #end
       rescue Exception => exc
         logger.error exc.to_s
         "#{ERROR_PREFIX}: data not found, please wait #{EXPIRE_FETCH} seconds and try again (#{exc.to_s})"
       end
     end
+  end
+  
+  protected
+  #cache_prepend distinguishes caches
+  def serve_cached_data_for_source
+    source = params[:source]
+    unless source
+      render :text => "no url specified"
+      return
+    end
+    result = data_cache ? data_cache.fetch("#{source}", :expires_in => EXPIRE_FETCH ) { yield(source) } : yield(source)
     headers["Cache-Control"]="max-age=#{EXPIRE_CONTENT}"
     headers["Vary"]="Accept-Encoding"
     status = result.starts_with?(ERROR_PREFIX) ? :not_found : :ok #using the beginning text to determine status code is hacky
@@ -57,6 +50,7 @@ class FetchController < ApplicationController
   end
     
   def data_cache
+    return nil #disable cache for use on heroku
     ActiveSupport::Cache::FileStore.new "cache"
   end
 end
