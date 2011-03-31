@@ -1,7 +1,6 @@
 
 require 'net/http'
 require 'uri'
-#require 'http_encoding_helper' #for gzip support use response.plain_body
 require 'httparty'
 #require 'system_timer'
 
