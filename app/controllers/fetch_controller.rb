@@ -43,7 +43,7 @@ class FetchController < ApplicationController
       return
     end
     result = data_cache ? data_cache.fetch("#{source}", :expires_in => EXPIRE_FETCH ) { yield(source) } : yield(source)
-    headers["Cache-Control"]="max-age=#{EXPIRE_CONTENT}"
+    headers["Cache-Control"]="public, max-age=#{EXPIRE_CONTENT}"
     headers["Vary"]="Accept-Encoding"
     status = result.starts_with?(ERROR_PREFIX) ? :not_found : :ok #using the beginning text to determine status code is hacky
     render :text => result, :status => status
